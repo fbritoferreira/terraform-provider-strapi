@@ -6,7 +6,9 @@ import (
 	"os"
 
 	"github.com/fbritoferreira/terraform-provider-strapi/internal/client"
+	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -17,6 +19,9 @@ import (
 )
 
 var _ provider.Provider = &StrapiProvider{}
+var _ provider.ProviderWithFunctions = &StrapiProvider{}
+var _ provider.ProviderWithEphemeralResources = &StrapiProvider{}
+var _ provider.ProviderWithActions = &StrapiProvider{}
 
 type StrapiProvider struct {
 	version string
@@ -62,11 +67,9 @@ func (p *StrapiProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	// Read environment variables as fallback
 	endpoint := os.Getenv("STRAPI_ENDPOINT")
 	apiToken := os.Getenv("STRAPI_API_TOKEN")
 
-	// Configuration values are now available
 	if !config.Endpoint.IsNull() {
 		endpoint = config.Endpoint.ValueString()
 	}
@@ -75,7 +78,6 @@ func (p *StrapiProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		apiToken = config.APIToken.ValueString()
 	}
 
-	// Validate configuration
 	if endpoint == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("endpoint"),
@@ -98,7 +100,6 @@ func (p *StrapiProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	// Create Strapi client
 	strapiClient := client.New(endpoint, apiToken)
 	resp.DataSourceData = strapiClient
 	resp.ResourceData = strapiClient
@@ -114,6 +115,10 @@ func (p *StrapiProvider) Resources(ctx context.Context) []func() resource.Resour
 	}
 }
 
+func (p *StrapiProvider) EphemeralResources(ctx context.Context) []func() ephemeral.EphemeralResource {
+	return []func() ephemeral.EphemeralResource{}
+}
+
 func (p *StrapiProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewRolesDataSource,
@@ -122,6 +127,10 @@ func (p *StrapiProvider) DataSources(ctx context.Context) []func() datasource.Da
 
 func (p *StrapiProvider) Functions(ctx context.Context) []func() function.Function {
 	return []func() function.Function{}
+}
+
+func (p *StrapiProvider) Actions(ctx context.Context) []func() action.Action {
+	return []func() action.Action{}
 }
 
 func New(version string) func() provider.Provider {

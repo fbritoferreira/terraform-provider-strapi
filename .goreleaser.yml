@@ -1,47 +1,61 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
 version: 2
 
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
-    # you may remove this if you don't need go generate
-    - go generate ./...
 
 builds:
   - env:
       - CGO_ENABLED=0
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
     goos:
-      - linux
+      - freebsd
       - windows
+      - linux
       - darwin
     goarch:
       - amd64
+      - '386'
+      - arm
       - arm64
-    ldflags:
-      - -s -w -X main.version={{.Version}}
-    binary: "{{ .ProjectName }}_v{{ .Version }}"
+    ignore:
+      - goos: darwin
+        goarch: '386'
+      - goos: windows
+        goarch: arm
+    binary: '{{ .ProjectName }}_v{{ .Version }}'
 
 archives:
-  - format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    files:
-      - LICENSE
-      - README.md
+  - formats:
+      - zip
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 
 checksum:
-  name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
+  extra_files:
+    - glob: 'terraform-registry-manifest.json'
+      name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
+  name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
   algorithm: sha256
 
 signs:
   - artifacts: checksum
-    args: ["--batch", "--yes", "--detach-sign", "--output", "${signature}"]
-    signature: "${artifact}.sig"
+    args:
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
 
 release:
-  draft: true
-  prerelease: auto
+  extra_files:
+    - glob: 'terraform-registry-manifest.json'
+      name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
 
 changelog:
-  skip: true
+  disable: true
