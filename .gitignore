@@ -1,0 +1,41 @@
+# Binaries
+/terraform-provider-strapi
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Go build
+/bin/
+/obj/
+
+# Test artifacts
+*.test
+*.out
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Testing
+coverage.txt
+.strapi.pid
+.strapi-test-token

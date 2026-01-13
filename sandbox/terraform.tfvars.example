@@ -1,0 +1,6 @@
+# Copy this file and fill in your actual API token
+# cp terraform.tfvars.example terraform.tfvars
+# Then edit terraform.tfvars with your values
+
+strapi_endpoint   = "http://localhost:1337"
+strapi_api_token = "YOUR_API_TOKEN_HERE"

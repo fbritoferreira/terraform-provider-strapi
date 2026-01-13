@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  strapi:
+    image: strapi/strapi:latest
+    container_name: strapi-sandbox
+    environment:
+      - DATABASE_CLIENT=sqlite
+      - DATABASE_FILENAME=.tmp/data.db
+      - NODE_ENV=development
+      - ADMIN_JWT_SECRET=change-me-to-something-secure
+    ports:
+      - "1337:1337"
+    volumes:
+      - strapi-data:/srv/app/.tmp
+    restart: unless-stopped
+
+volumes:
+  strapi-data:
